@@ -1,3 +1,8 @@
+'''
+pip install python-bittrex
+pip install win10toast
+'''
+
 import winsound, sys, signal, time, os
 from bittrex.bittrex import Bittrex, API_V2_0
 from win10toast import ToastNotifier
@@ -5,11 +10,15 @@ toaster = ToastNotifier()
 			  
 b = Bittrex(None, None)
 vars = None #price variations
-NOTIFICATION_PERCENT = 0.01 #2%
 initialPrices = None
+
+#config
+NOTIFICATION_PERCENT = 0.03 #variation to notify
 
 while True:
 	markets = ["USDT-BTC", "USDT-ETH", "BTC-FTC"]
+
+	print ("Updating Prices...")
 	currentPrices = [ b.get_ticker(m)["result"]["Last"] for m in markets ]
 	initialPrices = currentPrices[:] if initialPrices is None else initialPrices
 
@@ -23,10 +32,11 @@ while True:
 		initial_price = initialPrices[x]
 		
 		varPercent = "{0:.2f}".format((price / initial_price - 1) * 100) + "%"
+		varPercent = ("+" if price > initial_price else "") + varPercent
+		
 		print (market + " = " + "{0:.10f}".format(price) + " (" + varPercent + ")")
 		
 		if prev_var <= 0 or abs(max(prev_var, price) / min(prev_var, price) - 1) > NOTIFICATION_PERCENT:
-			var = (price / prev_var if prev_var > 0 else 0)
 			changes.append(market + " = " + "{0:.10f}".format(price) + " (" + varPercent + ")")
 			if vars is None:
 				vars = [None] * len(markets)
